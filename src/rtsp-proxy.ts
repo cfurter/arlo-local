@@ -108,7 +108,7 @@ export class RtspUdpProxy {
         });
 
         // listen on a random port
-        await listenZero(this.server);
+        await listenZero(this.server, '127.0.0.1');
 
         // return the port that this server is listening on
         return (this.server.address() as AddressInfo).port;

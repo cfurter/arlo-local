@@ -1,7 +1,7 @@
 import { BinarySensor } from '@scrypted/sdk';
 import { ArloDeviceProvider } from './main';
 
-import { DeviceSummary, DeviceStatus, DeviceRegistration } from './base-station-api-client';
+import { DeviceSummary, DeviceStatus, DeviceRegistration } from './arlo-types';
 import { ArloCameraDevice } from './camera';
 
 export class ArloDoorbellDevice extends ArloCameraDevice implements BinarySensor {

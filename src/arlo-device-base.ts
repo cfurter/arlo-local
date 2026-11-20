@@ -1,11 +1,11 @@
-import { Battery, MotionSensor, ScryptedDeviceBase, Setting, Settings, SettingValue } from '@scrypted/sdk';
+import { Battery, Charger, ChargeState, MotionSensor, ScryptedDeviceBase, ScryptedInterface, Setting, Settings, SettingValue } from '@scrypted/sdk';
 import { ArloDeviceProvider } from './main';
 
-import { DeviceSummary, DeviceStatus, DeviceRegistration, ChargerTech } from './base-station-api-client';
+import { DeviceSummary, DeviceStatus, DeviceRegistration, ChargerTech } from './arlo-types';
 
 const DEFAULT_MOTION_TIMEOUT = 10; // seconds
 
-export class ArloDeviceBase extends ScryptedDeviceBase implements Battery, MotionSensor, Settings {
+export class ArloDeviceBase extends ScryptedDeviceBase implements Battery, Charger, MotionSensor, Settings {
     motionTimeout?: NodeJS.Timeout;
     deviceSummary: DeviceSummary;
     deviceRegistration: DeviceRegistration;
@@ -35,6 +35,7 @@ export class ArloDeviceBase extends ScryptedDeviceBase implements Battery, Motio
         // if the charger tech is present and includes QuickCharger or Regular, then we are externally powered
         const chargerTech = this.deviceStatus?.ChargerTech;
         this.externallyPowered = chargerTech != null && [ChargerTech.QuickCharger, ChargerTech.Regular, ChargerTech.VacCharger].includes(chargerTech);
+        this.chargeState = this.externallyPowered ? ChargeState.Charging : ChargeState.NotCharging;
     }
 
     /** MotionSensor */
@@ -80,9 +81,11 @@ export class ArloDeviceBase extends ScryptedDeviceBase implements Battery, Motio
 
     // implement
     async putSetting(key: string, value: SettingValue) {
+        this.console.log(`${this.deviceSummary.serial_number}: Setting ${key} to ${value}`);
         if (value != null) {
             this.storage.setItem(key, value.toString());
         }
+        this.onDeviceEvent(ScryptedInterface.Settings, undefined);
     }
 
     getMotionSensorTimeout(): number {
